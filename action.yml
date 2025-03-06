@@ -12,8 +12,19 @@ runs:
         distribution: 'temurin'
         java-version: '21'
     - uses: gradle/actions/setup-gradle@v4
+    - name: Generate version number
+      id: version_number
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const name = process.env.GITHUB_REF_NAME;
+          if (name.startsWith("v")) {
+            return name.substring(1);
+          } else {
+            return `0.0.0+build.${process.env.GITHUB_RUN_NUMBER}`;
+          }
     - name: Build with Gradle
-      run: ./gradlew --no-daemon build
+      run: ./gradlew --no-daemon -Pmod_version=${{ steps.version_number.outputs.result }} build
       shell: bash
     - uses: actions/upload-artifact@v4
       with:
